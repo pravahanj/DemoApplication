@@ -21,45 +21,13 @@ jobs:
         with:
           dotnet-version: '8.x'
 
+      - name: Resotre with dotnet 
+        run : dotnet restore ./DemoApplication.sln
+        
       - name: Build with dotnet
-        run: dotnet build --configuration Release
+        run: dotnet build ./DemoApplication.sln --configuration Release --no-restore
 
       - name: dotnet publish
-        run: dotnet publish -c Release -o ${{env.DOTNET_ROOT}}/myapp
+        run: dotnet publish ./DemoApplication.sln --configuration Release --no-build
 
-      - name: Upload artifact for deployment job
-        uses: actions/upload-artifact@v4
-        with:
-          name: .net-app
-          path: ${{env.DOTNET_ROOT}}/myapp
-
-  deploy:
-    runs-on: windows-latest
-    needs: build
-    environment:
-      name: 'Production'
-      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
-    permissions:
-      id-token: write #This is required for requesting the JWT
-
-    steps:
-      - name: Download artifact from build job
-        uses: actions/download-artifact@v4
-        with:
-          name: .net-app
-      
-      - name: Login to Azure
-        uses: azure/login@v2
-        with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_E41A2EEF41964C18ACA7CAD8E7F21661 }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_D88216D948AE4FD99FDBA52C44355675 }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_FD798550C3564B218A8A74942EEEBA5C }}
-
-      - name: Deploy to Azure Web App
-        id: deploy-to-webapp
-        uses: azure/webapps-deploy@v3
-        with:
-          app-name: 'DemoApplication-github-'
-          slot-name: 'Production'
-          package: .
-          
+     
