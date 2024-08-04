@@ -9,6 +9,10 @@ on:
       - main
   workflow_dispatch:
 
+env: 
+  WEB_APP_NAME: demoapplication-github--cjbhefbyexfbcvb9.southindia-01
+  WEB_APP_PACKAGE_PATH: "./publish"
+  
 jobs:
   build:
     runs-on: windows-latest
@@ -28,6 +32,13 @@ jobs:
         run: dotnet build ./DemoApplication.sln --configuration Release --no-restore
 
       - name: dotnet publish
-        run: dotnet publish ./DemoApplication.sln --configuration Release --no-build
+        run: dotnet publish ./DemoApplication.sln --configuration Release --no-build --output '{{evn.WEB_APP_PACKAGE_PATH}}'
 
-     
+      - name: Deployment 
+        uses: azure/webapps-deploy@v3
+        with: 
+          app-name: ${{env.WEB_APP_NAME}}
+          publish-profile: ${{secrets.AZURE_PUBLISH_PROFILE}}
+          package: "${{env.WEB_APP_PACKAGE_PATH}}"
+      
+      
